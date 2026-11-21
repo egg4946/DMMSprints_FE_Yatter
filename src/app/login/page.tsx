@@ -3,30 +3,27 @@
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/auth/AuthProvider";
 
 export default function Page() {
   // username / password は useState で持つ
+  const { login } = useAuth();
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {e.preventDefault(); // ページリロードを防ぐ
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/auth/login`,
-    {
-        method: "POST",
-        headers: {
-        "Content-Type": "application/json",
-    },
-        body: JSON.stringify({
-        username,
-        password,
-    }),});
-    if (!res.ok) {
-          // エラー表示など
-          return;
-          }
-          const data = (await res.json()) as { username: string };
-          console.log(data);
-          // Cookie 保存・遷移は次のステップ以降  
-        };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {e.preventDefault();
+    if (!username || !password) {
+      alert("ユーザー名とパスワードを入力してください");
+      return;
+    }
+    try {
+      await login(username, password);
+      router.push("/");
+    } catch{
+      alert("ログインに失敗しました");
+    }
+  };
     return (
     <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-sm flex-col justify-center px-4">
       <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
